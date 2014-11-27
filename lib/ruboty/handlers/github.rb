@@ -33,6 +33,12 @@ module Ruboty
         description: "Merge pull request",
       )
 
+      on(
+        /create branch "(?<name>.+)" from (?<from>.+)/,
+        name: "create_branch",
+        description: "Create branch"
+      )
+
       def create_issue(message)
         Ruboty::Github::Actions::CreateIssue.new(message).call
       end
@@ -51,6 +57,10 @@ module Ruboty
 
       def merge_pull_request(message)
         Ruboty::Github::Actions::MergePullRequest.new(message).call
+      end
+
+      def create_branch(message)
+        Ruboty::Github::Actions::CreateBranch.new(message).call
       end
     end
   end
