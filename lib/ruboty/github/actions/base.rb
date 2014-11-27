@@ -29,7 +29,7 @@ module Ruboty
         end
 
         def access_token
-          @access_token ||= access_tokens[sender_name]
+          @access_token ||= (access_tokens[sender_name] || default_access_token)
         end
 
         def client
@@ -62,6 +62,10 @@ module Ruboty
 
         def github_host
           ENV["GITHUB_HOST"]
+        end
+
+        def default_access_token
+          ENV["GITHUB_ACCESS_TOKEN"]
         end
       end
     end
