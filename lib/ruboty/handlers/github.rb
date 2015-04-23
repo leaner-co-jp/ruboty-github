@@ -45,6 +45,13 @@ module Ruboty
         description: 'prepare deploy branch'
       )
 
+      on(
+        %r{https?://github\.com/(?<repo>.*)/pull/(?<number>\d+)},
+        name: "show_pull_request",
+        description: "show pull request",
+        all: true
+      )
+
       def create_issue(message)
         Ruboty::Github::Actions::CreateIssue.new(message).call
       end
@@ -71,6 +78,10 @@ module Ruboty
 
       def prepare_deploy(message)
         Ruboty::Github::Actions::Deploy.new(message).call
+      end
+
+      def show_pull_request(message)
+        Ruboty::Github::Actions::ShowPullRequest.new(message).call
       end
     end
   end
