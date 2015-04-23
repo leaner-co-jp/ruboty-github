@@ -40,7 +40,7 @@ module Ruboty
       )
 
       on(
-        /prepare (?<name>.+) (?<repo>.+)/,
+        /prepare (?<name>\S+) (?<repo>\S+)( (?<branch>\S+))?/,
         name: 'prepare_deploy',
         description: 'prepare deploy branch'
       )
