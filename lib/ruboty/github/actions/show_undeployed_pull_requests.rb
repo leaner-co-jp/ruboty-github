@@ -30,7 +30,7 @@ module Ruboty
               /\AMerge pull request (?<number>\#\d+).*\n\n(?<title>.+)/,
               /\A(?<title>.+) \((?<number>#\d+)\)/)
             merge_pull_requests.each do |text|
-              m = text.match(r) { |t| "#{t[:number]} #{t[:text]}" }
+              m = text.match(r) { |t| "#{t[:number]} #{t[:title]}" }
               message.reply m
             end
           end
