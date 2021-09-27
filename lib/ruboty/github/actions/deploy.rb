@@ -28,6 +28,10 @@ module Ruboty
           if pull_requests.empty?
             message.reply("#{repo} にはリリースが必要な差分はないようだな！")
           else
+            # DEBUG
+            puts "create pr #{repository} #{base}...#{head}"
+            puts "title: #{title(base)}"
+            puts description(pull_requests)
             pr = client.create_pull_request(repository, base, head, title(base), description(pull_requests))
             message.reply("#{repo} のPRを #{pr.html_url} で作ったぞ！")
           end
