@@ -26,14 +26,14 @@ module Ruboty
           pull_requests = merge_pull_requests(repository, 'release', 'develop')
 
           if pull_requests.empty?
-            message.reply("#{repo} にはリリースが必要な差分はないようだな！")
+            message.reply("#{repository} にはリリースが必要な差分はないようだな！")
           else
             # DEBUG
             puts "create pr #{repository} #{base}...#{head}"
             puts "title: #{title(base)}"
             puts description(pull_requests)
             pr = client.create_pull_request(repository, base, head, title(base), description(pull_requests))
-            message.reply("#{repo} のPRを #{pr.html_url} で作ったぞ！")
+            message.reply("#{repository} のPRを #{pr.html_url} で作ったぞ！")
           end
         end
 
@@ -62,7 +62,7 @@ module Ruboty
 
         # e.g. team1/repo1:base1...head1,team2/repo2:base2...head2
         def repositories
-          message[:repos].split(',').map { |repo| repo.match(/(?<repository>.+):(?<base>.+)...(?<head>.+)/).named_captures }
+          message[:repos].split(',').map { |repo| repo.match(/(?<repository>.+):(?<base>.+)\.\.\.(?<head>.+)/).named_captures }
         end
       end
     end
