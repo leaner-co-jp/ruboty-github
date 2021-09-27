@@ -2,23 +2,10 @@ module Ruboty
   module Github
     module Actions
       class Deploy < Base
-        def initialize(message, prefix)
-          super(message)
-
-          @prefix = prefix
-        end
-
         def call
           return require_access_token unless has_access_token?
 
-          c = new_master
-          create_branch("heads/#{name}_master", c.sha)
-          update_branch_with_empty_commit("heads/#{prefix}/#{name}", 'master') if prefix == 'deployment'
-          pr = pull_request("#{prefix}/#{name}",
-                            "#{name}_master",
-                            "#{Time.now.strftime('%Y-%m-%d')} Deploy to #{name} by #{message.from_name}",
-                            description)
-          message.reply("Created #{pr.html_url}")
+          repositories.each { |h| create_release_pr(h['repository'], h['base'], h['head']) }
         rescue Octokit::UnprocessableEntity => e
           raise e unless /Reference already exists/.match?(e.message)
           message.reply("Oops! A branch named '#{name}_master' already exists.")
@@ -34,72 +21,44 @@ module Ruboty
 
         attr_reader :prefix
 
-        def new_master
-          if branch
-            # pull/xxx は配列が返ってくる
-            [ client.ref(repository, branch) ].flatten.first.object
+        def create_release_pr(repository, base, head)
+          # 差分は常にreleaseとdevelopの差分で見る
+          pull_requests = merge_pull_requests(repository, 'release', 'develop')
+
+          if pull_requests.empty?
+            message.reply("#{repo} にはリリースが必要な差分はないようだな！")
           else
-            create_empty_commit('master', 'Open PR')
+            pr = client.create_pull_request(repository, base, head, title(base), description(pull_requests))
+            message.reply("#{repo} のPRを #{pr.html_url} で作ったぞ！")
           end
         end
 
-        def pull_request(base, head, title, description)
-          client.create_pull_request(repository, base, head, title, description)
+        def title(base)
+          "#{base == 'release' ? '本番反映' : 'ステージング反映'} #{Time.now.strftime('%Y-%m-%d')}"
         end
 
-        def create_branch(name, sha1)
-          client.create_ref(repository, name, sha1)
+        def description(pull_requests)
+          r = Regexp.union(
+            /\AMerge pull request (?<number>\#\d+).*\n\n(?<title>.+)/,
+            /\A(?<title>.+) \((?<number>#\d+)\)/)
+          pull_requests.map do |text|
+            text.match(r) { |t| "#{t[:number]} #{t[:title]}" }
+          end.join("\n")
         end
 
-        def update_branch_with_empty_commit(name, branch)
-          # We add an empty commit so that the webhook push event caused by update_ref has `forced: true` status
-          # even if this action is called twice without merging a deployment PR.
-          new_commit = create_empty_commit(branch, 'Deployment')
-          client.update_ref(repository, name, new_commit.sha, true)
+        def merge_pull_requests(repo, base, head)
+          commits(repo, base, head)[:commits].map {|commit|
+            commit[:commit][:message]
+          }.grep(/(\A.+ \(#\d+\)|\AMerge pull request)/)
         end
 
-        def create_empty_commit(branch, message)
-          current = client.branch(repository, branch)
-          client.create_commit(repository, message,
-                               current.commit.commit.tree.sha,
-                               current.commit.sha)
+        def commits(repo, base, head)
+          client.compare(repo, base, head)
         end
 
-        def branch
-          message[:branch]
-        end
-
-        # e.g. sandbox
-        def name
-          message[:name]
-        end
-
-        # e.g. alice/foo:test
-        def from
-          message[:from]
-        end
-
-        # e.g. alice
-        def from_user
-          from.split("/").first
-        end
-
-        # e.g. test
-        def from_branch
-          from.split(":").last
-        end
-
-        # e.g. bob/foo
-        def repository
-          message[:repo]
-        end
-
-        def format(str)
-          str.to_s.gsub('\n',"\n")
-        end
-
-        def description
-          format(ENV["GITHUB_PR_DESCRIPTION_#{prefix.upcase}"] || ENV['GITHUB_PR_DESCRIPTION'] || '')
+        # e.g. team1/repo1:base1...head1,team2/repo2:base2...head2
+        def repositories
+          message[:repos].split(',').map { |repo| repo.match(/(?<repository>.+):(?<base>.+)...(?<head>.+)/).named_captures }
         end
       end
     end

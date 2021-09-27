@@ -60,21 +60,9 @@ module Ruboty
       )
 
       on(
-        /prepare (?<name>\S+) (?<repo>\S+)( (?<branch>\S+))?/,
-        name: 'prepare_deploy',
-        description: 'prepare deploy branch'
-      )
-
-      on(
-        /release (?<name>\S+) (?<repo>\S+)( (?<branch>\S+))?/,
+        /release (?<repos>\S+)/,
         name: 'prepare_release',
-        description: 'prepare release branch'
-      )
-
-      on(
-        /release_with_env (?<name>\S+) (?<repo>\S+)( (?<branch>\S+))?/,
-        name: 'prepare_release_with_env',
-        description: 'prepare release branch(env/xxx)'
+        description: 'prepare production release pull requests'
       )
 
       on(
@@ -126,16 +114,8 @@ module Ruboty
         Ruboty::Github::Actions::PushBranch.new(message, force: true).call
       end
 
-      def prepare_deploy(message)
-        Ruboty::Github::Actions::Deploy.new(message, 'deployment').call
-      end
-
       def prepare_release(message)
-        Ruboty::Github::Actions::Deploy.new(message, 'release').call
-      end
-
-      def prepare_release_with_env(message)
-        Ruboty::Github::Actions::Release.new(message, 'release', 'release').call
+        Ruboty::Github::Actions::Deploy.new(message).call
       end
 
       def show_pull_request(message)
