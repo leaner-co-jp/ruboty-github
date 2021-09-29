@@ -66,13 +66,6 @@ module Ruboty
       )
 
       on(
-        %r{.*https?://github\.com/(?<repo>.*)/pull/(?<number>\d+).*},
-        name: "show_pull_request",
-        description: "show pull request",
-        all: true
-      )
-
-      on(
         /show undeployed (?<repo>.*)/,
         name: 'show_undeployed_pull_requests',
         description: 'show undeployed pull requests'
