@@ -35,10 +35,8 @@ module Ruboty
               /\A(?<title>.+) \((?<number>#\d+)\)/)
             r2 = /\AMerge pull request (?<number>\#\d+) from .*\/dependabot\/(?<title>.+)\z/
             pull_requests.each do |text|
-              puts "extract from '#{text}'"
               m = text.match(r) { |t| "#{t[:number]} #{t[:title]} https://github.com/#{repo}/pull/#{t[:number].gsub('#', '')}" }
               m ||= text.match(r2) { |t| "#{t[:number]} Bump #{t[:title]} https://github.com/#{repo}/pull/#{t[:number].gsub('#', '')}" }
-              puts "extracted: '#{m.inspect}'"
               message.reply m
             end
           end
