@@ -45,8 +45,10 @@ module Ruboty
           r = Regexp.union(
             /\AMerge pull request (?<number>\#\d+).*\n\n(?<title>.+)/,
             /\A(?<title>.+) \((?<number>#\d+)\)/)
+          r2 = /\AMerge pull request (?<number>\#\d+) from .*\/dependabot\/(?<title>.+)\z/
           pull_requests.map do |text|
-            text.match(r) { |t| "#{t[:number]} #{t[:title]}" }
+            text.match(r) { |t| "#{t[:number]} #{t[:title]}" } ||
+              text.match(r2) { |t| "#{t[:number]} Bump #{t[:title]} https://github.com/#{repo}/pull/#{t[:number].gsub('#', '')}" }
           end.join("\n")
         end
 
