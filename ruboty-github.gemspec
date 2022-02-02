@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "activesupport"
   spec.add_dependency "ruboty"
-  spec.add_dependency "octokit"
+  spec.add_dependency "octokit", '4.21.0'
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec", "2.14.1"
