@@ -48,7 +48,8 @@ module Ruboty
           r2 = /\AMerge pull request (?<number>\#\d+) from .*\/dependabot\/(?<title>.+)\z/
           pull_requests.map do |text|
             text.match(r) { |t| "#{t[:number]} #{t[:title]}" } ||
-              text.match(r2) { |t| "#{t[:number]} Bump #{t[:title]}" }
+              text.match(r2) { |t| "#{t[:number]} Bump #{t[:title]}" } ||
+              text
           end.join("\n")
         end
 
