@@ -22,8 +22,7 @@ module Ruboty
         attr_reader :prefix
 
         def create_release_pr(repository, base, head)
-          # 差分は常にreleaseとdevelopの差分で見る
-          pull_requests = merge_pull_requests(repository, 'release', 'develop')
+          pull_requests = merge_pull_requests(repository, base, head)
 
           if pull_requests.empty?
             message.reply("#{repository} にはリリースが必要な差分はないようだな！")
